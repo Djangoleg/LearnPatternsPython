@@ -1,4 +1,4 @@
-from simba_framework.templator import render
+from lite_framework.templator import render
 
 
 class Index:
@@ -8,7 +8,7 @@ class Index:
 
 class About:
     def __call__(self, request):
-        return '200 OK', 'about'
+        return '200 OK', render('about.html', data=request.get('data', None))
 
 
 class NotFound404:

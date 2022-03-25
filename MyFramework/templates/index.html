@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Python note</title>
+    <style>
+        .headerPage, .footerPage {
+          text-align: center;
+          padding: 20px 0;
+        }
+        .submit {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+        .mTable {
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mTable thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+        }
+
+        .mTable th,
+        .mTable td {
+            padding: 12px 15px;
+        }
+
+        .mTable tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .mTable tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .mTable tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+        }
+
+        .mTable tbody tr.active-row {
+            font-weight: bold;
+            color: #009879;
+        }
+    </style>
+</head>
+<body>
+    <div class="headerPage">
+        <h2>Python note</h2>
+    </div>
+    <div class="centerPage">
+        <div class="memoTable">
+            <table class="mTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                      </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>map() function</b></td>
+                        <td># Return double of n<br>
+                            def addition(n):<br>
+                                return n + n<br>
+
+                            # We double all numbers using map()<br>
+                            numbers = (1, 2, 3, 4)<br>
+                            result = map(addition, numbers)<br>
+                            print(list(result))<br><br>
+
+                            # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>zip() Function</b></td>
+                        <td>
+                            a = ("John", "Charles", "Mike")<br>
+                            b = ("Jenny", "Christy", "Monica", "Vicky")<br>
+                            x = zip(a, b)<br>
+                            print(tuple(x))<br><br>
+
+                            # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <form action="" method="post">
+ 	    <div class="submit"><input type="submit" value="Add" /></div>
+    </form>
+    <div class="footerPage">
+        <b class="p">By OK. {{data}}</b>
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script></script>
+</body>
+</html>
