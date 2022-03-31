@@ -1,5 +1,7 @@
 import quopri
 
+from lite_framework.lite_requests import PostRequests, GetRequests
+
 
 class PageNotFound404:
     def __call__(self, request):
@@ -15,26 +17,51 @@ class LiteFramework:
         self.fronts_lst = fronts_obj
 
     def __call__(self, environ, start_response):
-        # получаем адрес, по которому выполнен переход
+        # Получаем адрес, по которому выполнен переход.
         path = environ['PATH_INFO']
 
-        # добавление закрывающего слеша
+        # Добавление закрывающего слеша.
         if not path.endswith('/'):
             path = f'{path}/'
 
-        # находим нужный контроллер
+        request = {}
+        # Данные запроса.
+        method = environ['REQUEST_METHOD']
+        request['method'] = method
+
+        if method == 'POST':
+            data = PostRequests().get_request_params(environ)
+
+            name = data.get('name', None)
+            description = data.get('description', None)
+
+            request_data = request.get('data', dict())
+
+            if name != '' and description != '':
+                tableLine = f'<tr><td><b>{name}</b></td><td>{description}</td></tr>'
+                request_data['tableLine'] = tableLine
+
+            request['data'] = request_data
+            print(f'Пришёл post-запрос: {LiteFramework.decode_value(data)}')
+        if method == 'GET':
+            request_params = GetRequests().get_request_params(environ)
+            request['request_params'] = request_params
+            print(f'Пришли GET-параметры: {request_params}')
+        print(request)
+
+        # Находим нужный контроллер
         # отработка паттерна page controller
         if path in self.routes_lst:
             view = self.routes_lst[path]
         else:
             view = PageNotFound404()
-        request = {}
-        # наполняем словарь request элементами
+
+        # Наполняем словарь request элементами
         # этот словарь получат все контроллеры
-        # отработка паттерна front controller
+        # отработка паттерна front controller.
         for front in self.fronts_lst:
             front(request)
-        # запуск контроллера с передачей объекта request
+        # Запуск контроллера с передачей объекта request.
         code, body = view(request)
         start_response(code, [('Content-Type', 'text/html')])
         return [body.encode('utf-8')]
