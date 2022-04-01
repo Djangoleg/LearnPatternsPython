@@ -4,12 +4,16 @@ from views import Index, About
 
 # front controller
 def secret_front(request):
-    request['data'] = date.today().year
+    data = request.get('data', dict())
+    data['my_date'] = date.today().year
+    request['data'] = data
+
 
 
 def other_front(request):
-    request['key'] = 'key'
-
+    data = request.get('data', dict())
+    data['key'] = 'key'
+    request['data'] = data
 
 fronts = [secret_front, other_front]
 
