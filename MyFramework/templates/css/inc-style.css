@@ -1,50 +1,91 @@
+.headerPage, .footerPage {
+    text-align: center;
+    padding: 20px 0;
+}
 
-    .headerPage, .footerPage {
-      text-align: center;
-      padding: 20px 0;
-    }
-    .formFieldSet {
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
-    }
-    fieldset {
-        border: 0;
-    }
-    .mTable {
-        border-collapse: collapse;
-        margin: 10px 0;
-        font-size: 0.9em;
-        font-family: sans-serif;
-        min-width: 400px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .mTable thead tr {
-        background-color: #009879;
-        color: #ffffff;
-        text-align: left;
-    }
-    .mTable th,
-    .mTable td {
-        padding: 12px 15px;
-    }
-    .mTable tbody tr {
-        border-bottom: 1px solid #dddddd;
-    }
+.formFieldSet {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
 
-    .mTable tbody tr:nth-of-type(even) {
-        background-color: #f3f3f3;
-    }
-    .mTable tbody tr:last-of-type {
-        border-bottom: 2px solid #009879;
-    }
-    .mTable tbody tr.active-row {
-        font-weight: bold;
-        color: #009879;
-    }
-    .aboutCenterPage {
-      text-align: center;
-      padding: 20px 0;
-    }
+fieldset {
+    border: 0;
+}
+
+.mTable {
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mTable thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.mTable th,
+.mTable td {
+    padding: 12px 15px;
+}
+
+.mTable tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.mTable tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.mTable tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+.mTable tbody tr.active-row {
+    font-weight: bold;
+    color: #009879;
+}
+
+.aboutCenterPage {
+    text-align: center;
+    padding: 20px 0;
+}
+/*Menu css*/
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+  border-right:1px solid #bbb;
+}
+
+li:last-child {
+  border-right: none;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #009879;
+}
