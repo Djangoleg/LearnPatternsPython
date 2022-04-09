@@ -1,7 +1,5 @@
-from datetime import date
-
-from jinja2 import Template
-import os
+from jinja2.environment import Environment
+from jinja2 import Template, FileSystemLoader
 
 
 def render(template_name, folder='templates', **kwargs):
@@ -12,10 +10,7 @@ def render(template_name, folder='templates', **kwargs):
     :return:
     """
     kwargs = kwargs.get('data', dict())
-    file_path = os.path.join(folder, template_name)
-    # Открываем шаблон по имени
-    with open(file_path, encoding='utf-8') as f:
-        # Читаем
-        template = Template(f.read())
-    # рендерим шаблон с параметрами
+    env = Environment()
+    env.loader = FileSystemLoader(folder)
+    template = env.get_template(template_name)
     return template.render(**kwargs)

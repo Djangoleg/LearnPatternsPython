@@ -1,0 +1,73 @@
+<div class="centerPage">
+    <div class="memoTable">
+        <table class="mTable">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><b>map() function</b></td>
+                <td># Return double of n<br>
+                    def addition(n):<br>
+                    return n + n<br>
+
+                    # We double all numbers using map()<br>
+                    numbers = (1, 2, 3, 4)<br>
+                    result = map(addition, numbers)<br>
+                    print(list(result))<br><br>
+
+                    # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
+                </td>
+            </tr>
+            <tr>
+                <td><b>zip() Function</b></td>
+                <td>
+                    a = ("John", "Charles", "Mike")<br>
+                    b = ("Jenny", "Christy", "Monica", "Vicky")<br>
+                    x = zip(a, b)<br>
+                    print(tuple(x))<br><br>
+
+                    # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
+                </td>
+            </tr>
+            {{tableLine}}
+            </tbody>
+        </table>
+    </div>
+    <div class="formFieldSet">
+        <form action="" method="post">
+            <fieldset>
+                <table class="mTable">
+                    <thead>
+                    <tr>
+                        <th>Add note record</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <label class="title" for="name">Name:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="name" id="name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="title" for="description">Description:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="description" id="description">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="submit"><input type="submit" value="Add"/></div>
+            </fieldset>
+        </form>
+    </div>
+</div>
