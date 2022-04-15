@@ -9,7 +9,6 @@ def render(template_name, folder='templates', **kwargs):
     :param kwargs: параметры
     :return:
     """
-    kwargs = kwargs.get('data', dict())
     env = Environment()
     env.loader = FileSystemLoader(folder)
     template = env.get_template(template_name)

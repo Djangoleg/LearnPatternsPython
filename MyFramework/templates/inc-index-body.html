@@ -5,35 +5,24 @@
             <tr>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Category</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
+            {% for item in notes_list %}
             <tr>
-                <td><b>map() function</b></td>
-                <td># Return double of n<br>
-                    def addition(n):<br>
-                    return n + n<br>
-
-                    # We double all numbers using map()<br>
-                    numbers = (1, 2, 3, 4)<br>
-                    result = map(addition, numbers)<br>
-                    print(list(result))<br><br>
-
-                    # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
-                </td>
-            </tr>
-            <tr>
-                <td><b>zip() Function</b></td>
+                <td><b>{{item.name}}</b></td>
+                <td>{{item.description}}</td>
+                <td>{{item.category}}</td>
                 <td>
-                    a = ("John", "Charles", "Mike")<br>
-                    b = ("Jenny", "Christy", "Monica", "Vicky")<br>
-                    x = zip(a, b)<br>
-                    print(tuple(x))<br><br>
-
-                    # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))
+                    <span>
+                        <a href="/delete_note/?id={{item.id}}">Del</a>
+                        <a href="/copy_note/?id={{item.id}}">Copy</a>
+                    </span>
                 </td>
             </tr>
-            {{tableLine}}
+            {% endfor %}
             </tbody>
         </table>
     </div>
@@ -62,6 +51,14 @@
                         </td>
                         <td>
                             <input type="text" name="description" id="description">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="title" for="category">Category:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="category" id="category">
                         </td>
                     </tr>
                     </tbody>

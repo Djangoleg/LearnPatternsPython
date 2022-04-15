@@ -34,12 +34,20 @@ class NotePrototype:
 
 
 class Note(NotePrototype):
+    auto_id = 1
 
     def __init__(self, name, description, category):
+        self.id = Note.auto_id
+        Note.auto_id += 1
         self.name = name
         self.description = description
         self.category = category
-        self.category.notes.append(self)
+
+    def __eq__(self, other):
+        return self.name == other.name and \
+               self.description == other.description and \
+               self.category == other.category
+
 
 class DatabaseNote(Note):
     pass
@@ -55,24 +63,6 @@ class ObjectOrientedNote(Note):
 
 class PatternNote(Note):
     pass
-
-# Категория.
-class Category:
-    auto_id = 0
-
-    def __init__(self, name, description, category):
-        self.id = Category.auto_id
-        Category.auto_id += 1
-        self.name = name
-        self.description = description
-        self.category = category
-        self.notes = []
-
-    def note_count(self):
-        result = len(self.notes)
-        if self.category:
-            result += self.category.note_count()
-        return result
 
 # Порождающий паттерн Абстрактная фабрика - фабрика записок
 class NoteFactory:
@@ -101,22 +91,26 @@ class Engine:
     def create_user(type_):
         return UserFactory.create(type_)
 
-    @staticmethod
-    def create_category(name, category=None):
-        return Category(name, category)
-
-    def find_category_by_id(self, id):
-        for item in self.categories:
+    def find_note_by_id(self, id):
+        for item in self.notes:
             print('item', item.id)
             if item.id == id:
                 return item
-        raise Exception(f'Нет категории с id = {id}')
+        raise Exception(f'Нет заметки с id = {id}')
+
+    def del_note_by_id(self, id):
+        for item in self.notes:
+            print('item', item.id)
+            if item.id == id:
+                self.notes.remove(item)
+                return
+        raise Exception(f'Нет заметки с id = {id}')
 
     @staticmethod
     def create_note(type_, name, description, category):
         return NoteFactory.create(type_, name, description, category)
 
-    def get_course(self, name):
+    def get_note_by_name(self, name):
         for item in self.notes:
             if item.name == name:
                 return item
