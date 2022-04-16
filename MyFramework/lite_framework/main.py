@@ -1,6 +1,7 @@
 import quopri
 
 from lite_framework.lite_requests import PostRequests, GetRequests
+from patterns.сreational_patterns import Note
 
 
 class PageNotFound404:
@@ -34,14 +35,12 @@ class LiteFramework:
 
             name = data.get('name', None)
             description = data.get('description', None)
+            category = data.get('category', None)
 
-            request_data = request.get('data', dict())
+            if name and description and category:
+                request['note'] = Note(name=name, description=description, category=category)
 
-            if name != '' and description != '':
-                tableLine = f'<tr><td><b>{name}</b></td><td>{description}</td></tr>'
-                request_data['tableLine'] = tableLine
-
-            request['data'] = request_data
+            path = '/'
             print(f'Пришёл post-запрос: {LiteFramework.decode_value(data)}')
         if method == 'GET':
             request_params = GetRequests().get_request_params(environ)

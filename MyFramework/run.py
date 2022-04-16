@@ -1,9 +1,8 @@
 from lite_framework.main import LiteFramework
+from lite_framework.settings import HOST, PORT
 from urls import routes, fronts
 from wsgiref.simple_server import make_server
 
-HOST = '127.0.0.1'
-PORT = 8080
 
 application = LiteFramework(routes, fronts)
 
