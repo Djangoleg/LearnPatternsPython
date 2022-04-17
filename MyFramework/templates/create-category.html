@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}
+	Python note
+{% endblock %}
+{% block style %}
+{% include "css/inc-style.css" %}
+{% endblock %}
+{% block body %}
+    {% include "inc-menu.html" %}
+    <h1>Create a category</h1>
+    <form method="post">
+        <input type="text" name="category_name" placeholder="Name">
+        <button type="submit">Save</button>
+    </form>
+    {% include "inc-footer.html" %}
+{% endblock %}
