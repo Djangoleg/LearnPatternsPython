@@ -1,17 +1,32 @@
-<div class="aboutCenterPage">
-    <h1>Category list</h1>
+<div class="headerPage">
+    <h2>Category</h2>
 </div>
-<div>
-    <div>
-
-        {% for item in category_list %}
-        <div>
-            <b>{{item.name}}</b> <span>count: {{item.notes_count()}}
-                <a href="/note-list/?id={{item.id}}">View notes</a></span>
-        </div>
-        {% endfor %}
-    </div>
-    <div>
-        <a href="/create-category/">Add category</a>
-    </div>
+<div class="memoTable">
+    <table class="mTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Count</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in category_list %}
+            <tr>
+                <td>
+                    <b>{{item.name}}</b>
+                </td>
+                <td>
+                    {{item.notes_count()}}
+                </td>
+                <td>
+                    <a href="/note-list/?id={{item.id}}">View notes</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="aboutCenterPage">
+    <h4><a href="/create-category/">Add category</a></h4>
 </div>

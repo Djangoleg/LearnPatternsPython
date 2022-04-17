@@ -11,16 +11,40 @@
     <div>
         <a href="/category/">Back</a>
     </div>
-    <br>
-    <div>
-        <a href="/create-note/?id={{id}}">Create new note</a>
-        <br>
-        <h1>Note list for category "{{name}}"</h1>
-        {% for item in objects_list %}
-        <div>
-            <b>{{item.name}}</b> <span><a href="/copy-note/?id={{item.id}}">Copy</a></span>
-        </div>
-        {% endfor %}
+    <div class="headerPage">
+        <h2>Note list for category "{{name}}"</h2>
     </div>
+
+    <div class="memoTable">
+        <table class="mTable">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in objects_list %}
+            <tr>
+                <td><b>{{item.name}}</b></td>
+                <td>{{item.description}}</td>
+                <td>{{item.category.name}}</td>
+                <td>
+                    <span>
+                        <a href="/delete_note/?id={{item.id}}">Del</a>
+                        <a href="/copy-note/?id={{item.id}}">Copy</a>
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="aboutCenterPage">
+        <h4><a href="/create-note/?id={{id}}">Create new note</a></h4>
+    </div>
+
     {% include "inc-footer.html" %}
 {% endblock %}

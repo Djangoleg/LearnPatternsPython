@@ -63,12 +63,20 @@ class DeleteNote:
 
     @Debug(name='DeleteNote')
     def __call__(self, request):
+        global category
         logger.log('Удалить заметку')
         try:
-            self.note_id = int(request['request_params']['id'])
-            site.del_note_by_id(int(self.note_id))
+            id = int(request['request_params']['id'])
 
-            return '200 OK', render('index.html', notes_list=site.notes, data=request.get('data', None))
+            note = site.find_note_by_id(id)
+            category_id = note.category.id
+            site.del_note_by_id(int(id))
+
+            if category_id:
+                category = site.find_category_by_id(int(category_id))
+
+            return '200 OK', render('note-list.html', data=request.get('data', None),
+                                    objects_list=category.notes, name=category.name, id=category.id)
         except KeyError:
             return '200 OK', 'No note have been added yet'
 
@@ -135,11 +143,14 @@ class CreateNote:
             name = data['note_name']
             name = site.decode_value(name)
 
+            description = data['description']
+            description = site.decode_value(description)
+
             category = None
             if self.category_id != -1:
                 category = site.find_category_by_id(int(self.category_id))
 
-                note = site.create_note('common', name, 'todo description', category)
+                note = site.create_note('common', name, description, category)
                 site.notes.append(note)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
@@ -177,11 +188,15 @@ class CopyNote:
                 new_note.name = new_name
                 new_note.id = new_id
                 site.notes.append(new_note)
+
+                new_note.category.notes.append(new_note)
+
                 category = site.find_category_by_id(new_note.category.id)
                 category.notes.append(new_note)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
                                     objects_list=category.notes, name=category.name, id=category.id)
+
         except KeyError:
             return '200 OK', 'No courses have been added yet'
 
