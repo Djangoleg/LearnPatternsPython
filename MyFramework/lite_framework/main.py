@@ -4,11 +4,6 @@ from lite_framework.lite_requests import PostRequests, GetRequests
 from patterns.сreational_patterns import Note
 
 
-class PageNotFound404:
-    def __call__(self, request):
-        return '404 WHAT', '404 PAGE Not Found'
-
-
 class LiteFramework:
 
     """Класс Framework - основа фреймворка"""
@@ -32,6 +27,7 @@ class LiteFramework:
 
         if method == 'POST':
             data = PostRequests().get_request_params(environ)
+            request['data'] = data
 
             name = data.get('name', None)
             description = data.get('description', None)
@@ -40,7 +36,6 @@ class LiteFramework:
             if name and description and category:
                 request['note'] = Note(name=name, description=description, category=category)
 
-            path = '/'
             print(f'Пришёл post-запрос: {LiteFramework.decode_value(data)}')
         if method == 'GET':
             request_params = GetRequests().get_request_params(environ)
@@ -73,3 +68,8 @@ class LiteFramework:
             val_decode_str = quopri.decodestring(val).decode('UTF-8')
             new_data[k] = val_decode_str
         return new_data
+
+
+class PageNotFound404:
+    def __call__(self, request):
+        return '404 WHAT', '404 PAGE Not Found'

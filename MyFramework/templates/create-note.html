@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}
+	Python note
+{% endblock %}
+{% block style %}
+{% include "css/inc-style.css" %}
+{% endblock %}
+{% block body %}
+    {% include "inc-menu.html" %}
+    <div>
+        <a href="/courses-list/?id={{id}}">Back</a>
+    </div>
+
+    <br>
+    <br>
+
+    <div>
+        <h1>Create note for category: "{{name}}"</h1>
+        <form method="post">
+            <input type="text" name="note_name" placeholder="Name">
+            <button type="submit">Save and return to note list</button>
+        </form>
+    </div>
+    {% include "inc-footer.html" %}
+{% endblock %}

@@ -7,21 +7,19 @@
 {% endblock %}
 {% block body %}
     {% include "inc-menu.html" %}
+    <br>
     <div>
         <a href="/category/">Back</a>
     </div>
-
     <br>
-    <br>
-
     <div>
         <a href="/create-note/?id={{id}}">Create new note</a>
         <br>
         <h1>Note list for category "{{name}}"</h1>
         {% for item in objects_list %}
-        <li>
-            {{item.name}} <span><a href="/copy-note/?name={{item.name}}">Copy</a></span>
-        </li>
+        <div>
+            <b>{{item.name}}</b> <span><a href="/copy-note/?id={{item.id}}">Copy</a></span>
+        </div>
         {% endfor %}
     </div>
     {% include "inc-footer.html" %}

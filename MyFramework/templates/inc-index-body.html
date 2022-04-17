@@ -14,11 +14,11 @@
             <tr>
                 <td><b>{{item.name}}</b></td>
                 <td>{{item.description}}</td>
-                <td>{{item.category}}</td>
+                <td>{{item.category.name}}</td>
                 <td>
                     <span>
                         <a href="/delete_note/?id={{item.id}}">Del</a>
-                        <a href="/copy_note/?id={{item.id}}">Copy</a>
+                        <a href="/copy-note/?id={{item.id}}">Copy</a>
                     </span>
                 </td>
             </tr>
