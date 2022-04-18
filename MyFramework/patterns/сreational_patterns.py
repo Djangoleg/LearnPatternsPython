@@ -121,6 +121,12 @@ class Engine:
         for note in self.notes:
             if note.id > max_id:
                 max_id = note.id
+
+        for item in self.categories:
+            for note in item.notes:
+                if note.id > max_id:
+                    max_id = note.id
+
         return max_id + 1
 
     def del_note_by_id(self, id):

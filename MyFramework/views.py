@@ -149,8 +149,9 @@ class CreateNote:
             category = None
             if self.category_id != -1:
                 category = site.find_category_by_id(int(self.category_id))
-
+                note_id = site.get_new_note_id()
                 note = site.create_note('common', name, description, category)
+                note.id = note_id
                 site.notes.append(note)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
@@ -188,8 +189,6 @@ class CopyNote:
                 new_note.name = new_name
                 new_note.id = new_id
                 site.notes.append(new_note)
-
-                new_note.category.notes.append(new_note)
 
                 category = site.find_category_by_id(new_note.category.id)
                 category.notes.append(new_note)

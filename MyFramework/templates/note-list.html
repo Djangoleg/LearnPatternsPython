@@ -9,7 +9,7 @@
     {% include "inc-menu.html" %}
     <br>
     <div>
-        <a class="back_button_link" href="/category/">Back</a>
+        <a class="button_link" href="/category/">Back</a>
     </div>
     <div class="headerPage">
         <h2>Note list for category "{{name}}"</h2>
@@ -43,7 +43,7 @@
         </table>
     </div>
     <div class="aboutCenterPage">
-        <h4><a href="/create-note/?id={{id}}">Create new note</a></h4>
+        <a class="button_link" href="/create-note/?id={{id}}">Create new note</a>
     </div>
 
     {% include "inc-footer.html" %}

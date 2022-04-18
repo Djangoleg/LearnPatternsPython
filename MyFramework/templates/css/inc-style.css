@@ -90,15 +90,16 @@ li a:hover:not(.active) {
   background-color: #009879;
 }
 
-.back_button_link {
-    display: block;
-    width: 115px;
-    height: 25px;
-    background: #009879;
-    padding: 10px;
-    text-align: center;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    line-height: 25px;
+.button_link {
+  background-color: #009879;
+  border: none;
+  color: white;
+  width: 115px;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
 }
