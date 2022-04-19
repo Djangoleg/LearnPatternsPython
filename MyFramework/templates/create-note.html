@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}
+	Python note
+{% endblock %}
+{% block style %}
+{% include "css/inc-style.css" %}
+{% endblock %}
+{% block body %}
+    {% include "inc-menu.html" %}
+    <br>
+    <div>
+        <a class="button_link" href="/note-list/?id={{id}}">Back</a>
+    </div>
+    <br>
+    <div>
+        <div class="headerPage">
+            <h2>Create note for category: "{{name}}"</h2>
+        </div>
+        <div class="formFieldSet">
+        <form action="" method="post">
+            <fieldset>
+                <table class="mTable">
+                    <thead>
+                    <tr>
+                        <th>Add note</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <label class="title" for="name">Name:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="note_name" id="category_name" placeholder="Name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="title" for="description">Description:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="description" id="description" placeholder="Description">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <br>
+                <input type="submit" class="button_link" value="Save"/>
+            </fieldset>
+        </form>
+    </div>
+
+    </div>
+    {% include "inc-footer.html" %}
+{% endblock %}

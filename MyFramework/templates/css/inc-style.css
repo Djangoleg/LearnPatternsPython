@@ -89,3 +89,17 @@ li a:hover:not(.active) {
 .active {
   background-color: #009879;
 }
+
+.button_link {
+  background-color: #009879;
+  border: none;
+  color: white;
+  width: 115px;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}

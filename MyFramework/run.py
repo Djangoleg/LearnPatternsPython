@@ -1,8 +1,9 @@
 from lite_framework.main import LiteFramework
 from lite_framework.settings import HOST, PORT
-from urls import routes, fronts
+from urls import fronts
 from wsgiref.simple_server import make_server
 
+from views import routes
 
 application = LiteFramework(routes, fronts)
 

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}
+	Python note
+{% endblock %}
+{% block style %}
+{% include "css/inc-style.css" %}
+{% endblock %}
+{% block body %}
+    {% include "inc-menu.html" %}
+    <br>
+    <div>
+        <a class="button_link" href="/category/">Back</a>
+    </div>
+    <div class="headerPage">
+        <h2>Create a category</h2>
+    </div>
+    <div class="formFieldSet">
+        <form action="" method="post">
+            <fieldset>
+                <table class="mTable">
+                    <thead>
+                    <tr>
+                        <th>Add category</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <label class="title" for="name">Name:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="category_name" id="category_name" placeholder="Name">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <input type="submit" class="button_link" value="Save"/>
+            </fieldset>
+        </form>
+    </div>
+    {% include "inc-footer.html" %}
+{% endblock %}

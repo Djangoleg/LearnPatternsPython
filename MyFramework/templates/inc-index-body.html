@@ -6,7 +6,6 @@
                 <th>Name</th>
                 <th>Description</th>
                 <th>Category</th>
-                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -14,57 +13,10 @@
             <tr>
                 <td><b>{{item.name}}</b></td>
                 <td>{{item.description}}</td>
-                <td>{{item.category}}</td>
-                <td>
-                    <span>
-                        <a href="/delete_note/?id={{item.id}}">Del</a>
-                        <a href="/copy_note/?id={{item.id}}">Copy</a>
-                    </span>
-                </td>
+                <td>{{item.category.name}}</td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div class="formFieldSet">
-        <form action="" method="post">
-            <fieldset>
-                <table class="mTable">
-                    <thead>
-                    <tr>
-                        <th>Add note record</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <label class="title" for="name">Name:</label>
-                        </td>
-                        <td>
-                            <input type="text" name="name" id="name">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label class="title" for="description">Description:</label>
-                        </td>
-                        <td>
-                            <input type="text" name="description" id="description">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label class="title" for="category">Category:</label>
-                        </td>
-                        <td>
-                            <input type="text" name="category" id="category">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="submit"><input type="submit" value="Add"/></div>
-            </fieldset>
-        </form>
     </div>
 </div>

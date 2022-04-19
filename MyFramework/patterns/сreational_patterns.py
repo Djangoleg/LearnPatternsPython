@@ -42,11 +42,12 @@ class Note(NotePrototype):
         self.name = name
         self.description = description
         self.category = category
+        self.category.notes.append(self)
 
     def __eq__(self, other):
         return self.name == other.name and \
                self.description == other.description and \
-               self.category == other.category
+               self.category.name == other.category.name
 
 
 class DatabaseNote(Note):
@@ -63,6 +64,23 @@ class ObjectOrientedNote(Note):
 
 class PatternNote(Note):
     pass
+
+# Категория
+class Category:
+    auto_id = 1
+
+    def __init__(self, name, category):
+        self.id = Category.auto_id
+        Category.auto_id += 1
+        self.name = name
+        self.category = category
+        self.notes = []
+
+    def notes_count(self):
+        result = len(self.notes)
+        if self.category:
+            result += self.category.notes_count()
+        return result
 
 # Порождающий паттерн Абстрактная фабрика - фабрика записок
 class NoteFactory:
@@ -98,13 +116,28 @@ class Engine:
                 return item
         raise Exception(f'Нет заметки с id = {id}')
 
+    def get_new_note_id(self):
+        max_id = 1
+        for note in self.notes:
+            if note.id > max_id:
+                max_id = note.id
+
+        for item in self.categories:
+            for note in item.notes:
+                if note.id > max_id:
+                    max_id = note.id
+
+        return max_id + 1
+
     def del_note_by_id(self, id):
         for item in self.notes:
-            print('item', item.id)
             if item.id == id:
                 self.notes.remove(item)
-                return
-        raise Exception(f'Нет заметки с id = {id}')
+
+        for item in self.categories:
+            for note in item.notes:
+                if note.id == id:
+                    item.notes.remove(note)
 
     @staticmethod
     def create_note(type_, name, description, category):
@@ -121,6 +154,17 @@ class Engine:
         val_b = bytes(val.replace('%', '=').replace("+", " "), 'UTF-8')
         val_decode_str = quopri.decodestring(val_b)
         return val_decode_str.decode('UTF-8')
+
+    @staticmethod
+    def create_category(name, category=None):
+        return Category(name, category)
+
+    def find_category_by_id(self, id):
+        for item in self.categories:
+            print('item', item.id)
+            if item.id == id:
+                return item
+        raise Exception(f'Нет категории с id = {id}')
 
 # Порождающий паттерн Синглтон.
 class SingletonByName(type):

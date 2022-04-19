@@ -18,9 +18,3 @@ def other_front(request):
 
 fronts = [secret_front, other_front]
 
-routes = {
-    '/': Index(),
-    '/about/': About(),
-    '/delete_note/': DeleteNote(),
-    '/copy_note/': CopyNote(),
-}
