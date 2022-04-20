@@ -3,11 +3,16 @@ import quopri
 
 # Абстрактный пользователь.
 class User:
-    pass
+
+    def __init__(self, name):
+        self.name = name
 
 # Читатель.
 class Reader(User):
-    pass
+
+    def __init__(self, name):
+        self.notes = []
+        super().__init__(name)
 
 # Редактор.
 class Editor(User):
@@ -22,8 +27,8 @@ class UserFactory:
 
     # Порождающий паттерн Фабричный метод.
     @classmethod
-    def create(cls, type_):
-        return cls.types[type_]()
+    def create(cls, type_, name):
+        return cls.types[type_](name)
 
 # Порождающий паттерн Прототип - заметка
 class NotePrototype:
@@ -100,14 +105,14 @@ class NoteFactory:
 # Основной интерфейс проекта
 class Engine:
     def __init__(self):
-        self.reader = []
-        self.editor = []
+        self.readers = []
+        self.editors = []
         self.notes = []
         self.categories = []
 
     @staticmethod
-    def create_user(type_):
-        return UserFactory.create(type_)
+    def create_user(type_, name):
+        return UserFactory.create(type_, name)
 
     def find_note_by_id(self, id):
         for item in self.notes:

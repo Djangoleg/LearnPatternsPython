@@ -1,43 +1,25 @@
-{% extends "base.html" %}
-{% block title %}
-	Python note
-{% endblock %}
-{% block style %}
-{% include "css/inc-style.css" %}
-{% endblock %}
-{% block body %}
-    {% include "inc-menu.html" %}
-    <br>
-    <div>
-        <a class="button_link" href="/reader-list/">Back</a>
-    </div>
-    <div class="headerPage">
-        <h2>Create reader</h2>
-    </div>
-    <div class="formFieldSet">
-        <form action="" method="post">
-            <fieldset>
-                <table class="mTable">
-                    <thead>
-                    <tr>
-                        <th>Add reader</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <label class="title" for="name">Name:</label>
-                        </td>
-                        <td>
-                            <input type="text" name="reader_name" id="reader_name" placeholder="Name">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <input type="submit" class="button_link" value="Save"/>
-            </fieldset>
-        </form>
-    </div>
-    {% include "inc-footer.html" %}
-{% endblock %}
+<div class="formFieldSet">
+    <form action="" method="post">
+        <fieldset>
+            <table class="mTable">
+                <thead>
+                <tr>
+                    <th>Add reader</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <label class="title" for="name">Name:</label>
+                    </td>
+                    <td>
+                        <input type="text" name="reader_name" id="reader_name" placeholder="Name">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" class="button_link" value="Save"/>
+        </fieldset>
+    </form>
+</div>

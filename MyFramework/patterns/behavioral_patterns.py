@@ -1,4 +1,6 @@
 import jsonpickle
+
+from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
 
 
@@ -50,7 +52,9 @@ class TemplateView:
     template_name = 'template.html'
 
     def get_context_data(self):
-        return {}
+        data = {}
+        data['data'] = {'server_url': SERVER_URL}
+        return data
 
     def get_template(self):
         return self.template_name
@@ -69,6 +73,7 @@ class ListView(TemplateView):
     template_name = 'list.html'
     context_object_name = 'objects_list'
 
+
     def get_queryset(self):
         print(self.queryset)
         return self.queryset
@@ -77,9 +82,10 @@ class ListView(TemplateView):
         return self.context_object_name
 
     def get_context_data(self):
+        context = super().get_context_data()
         queryset = self.get_queryset()
         context_object_name = self.get_context_object_name()
-        context = {context_object_name: queryset}
+        context[context_object_name] = queryset
         return context
 
 

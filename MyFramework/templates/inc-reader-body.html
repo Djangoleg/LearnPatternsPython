@@ -6,27 +6,20 @@
         <thead>
             <tr>
                 <th>Name</th>
-<!--                <th>Count</th>-->
                 <th>View</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in user_list %}
+            {% for item in objects_list %}
             <tr>
                 <td>
                     <b>{{item.name}}</b>
                 </td>
-<!--                <td>-->
-<!--                    {{item.user_count()}}-->
-<!--                </td>-->
                 <td>
-                    <a href="/user-list/?id={{item.id}}">View user</a>
+                    <a href="/reader-list/?id={{item.id}}">View reader</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
-<div class="aboutCenterPage">
-    <a class="button_link" href="/create-user/">Add user</a>
 </div>

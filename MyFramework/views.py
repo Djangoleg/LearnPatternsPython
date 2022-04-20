@@ -1,10 +1,13 @@
+from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
+from patterns.behavioral_patterns import ListView, CreateView
 from patterns.structural_patterns import AppRoute, Debug
 from patterns.сreational_patterns import Engine, Logger, Note
 
 site = Engine()
 logger = Logger('main')
 routes = {}
+
 
 # Контроллер - о проекте.
 @AppRoute(routes=routes, url='/about/')
@@ -13,6 +16,7 @@ class About:
     @Debug(name='About')
     def __call__(self, request):
         return '200 OK', render('about.html', data=request.get('data', None))
+
 
 # Контроллер - стартовая страница.
 @AppRoute(routes=routes, url='/')
@@ -57,6 +61,7 @@ class Index:
 
         return '200 OK', render('index.html', notes_list=site.notes, data=request.get('data', None))
 
+
 # Контроллер - удалить заметку.
 @AppRoute(routes=routes, url='/delete_note/')
 class DeleteNote:
@@ -80,6 +85,7 @@ class DeleteNote:
         except KeyError:
             return '200 OK', 'No note have been added yet'
 
+
 # Контроллер - категории.
 @AppRoute(routes=routes, url='/category/')
 class Category:
@@ -87,6 +93,7 @@ class Category:
     @Debug(name='Category')
     def __call__(self, request):
         return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
+
 
 # Контроллер - создать категорию.
 @AppRoute(routes=routes, url='/create-category/')
@@ -114,7 +121,9 @@ class CreateCategory:
 
             return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
         else:
-            return '200 OK', render('create-category.html', data=request.get('data', None), category_list=site.categories)
+            return '200 OK', render('create-category.html', data=request.get('data', None),
+                                    category_list=site.categories)
+
 
 # Контроллер - список заметок.
 @AppRoute(routes=routes, url='/note-list/')
@@ -128,6 +137,7 @@ class NotesList:
                                     name=category.name, id=category.id)
         except KeyError:
             return '200 OK', 'No courses have been added yet'
+
 
 # Контроллер - создать заметки.
 @AppRoute(routes=routes, url='/create-note/')
@@ -167,6 +177,7 @@ class CreateNote:
             except KeyError:
                 return '200 OK', 'No categories have been added yet'
 
+
 # Контроллер - копировать заметку.
 @AppRoute(routes=routes, url='/copy-note/')
 class CopyNote:
@@ -199,6 +210,18 @@ class CopyNote:
         except KeyError:
             return '200 OK', 'No courses have been added yet'
 
+
+# Контроллер - читатели заметок.
+@AppRoute(routes=routes, url='/reader-list/')
+class ReaderListView(ListView, CreateView):
+    queryset = site.readers
+    template_name = 'reader-list.html'
+
+    def create_obj(self, data: dict):
+        name = data['reader_name']
+        name = site.decode_value(name)
+        new_obj = site.create_user('reader', name)
+        site.readers.append(new_obj)
 
 class NotFound404:
 
