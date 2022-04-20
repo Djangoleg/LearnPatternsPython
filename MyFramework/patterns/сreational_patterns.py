@@ -3,8 +3,11 @@ import quopri
 
 # Абстрактный пользователь.
 class User:
+    auto_id = 1
 
     def __init__(self, name):
+        self.id = User.auto_id
+        User.auto_id += 1
         self.name = name
 
 # Читатель.

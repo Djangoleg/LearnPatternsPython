@@ -5,18 +5,23 @@
     <table class="mTable">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Name</th>
-                <th>View</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for item in objects_list %}
             <tr>
                 <td>
+                    <b>{{item.id}}</b>
+                </td>
+                <td>
                     <b>{{item.name}}</b>
                 </td>
                 <td>
-                    <a href="/reader-list/?id={{item.id}}">View reader</a>
+                    <a href="/delete-reader/?id={{item.id}}">Del </a>
+                    <a href="/detail-reader/?id={{item.id}}">View</a>
                 </td>
             </tr>
             {% endfor %}

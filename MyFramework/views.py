@@ -1,6 +1,6 @@
 from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
-from patterns.behavioral_patterns import ListView, CreateView
+from patterns.behavioral_patterns import ListView, CreateView, DeleteView
 from patterns.structural_patterns import AppRoute, Debug
 from patterns.сreational_patterns import Engine, Logger, Note
 
@@ -222,6 +222,20 @@ class ReaderListView(ListView, CreateView):
         name = site.decode_value(name)
         new_obj = site.create_user('reader', name)
         site.readers.append(new_obj)
+
+# Контроллер - читатели заметок.
+@AppRoute(routes=routes, url='/delete-reader/')
+class ReaderDeleteView(DeleteView):
+    queryset = site.readers
+    template_name = 'reader-list.html'
+
+    def delete_obj(self, params: dict):
+        reader_id = params.get('id', None)
+        if reader_id:
+            for reader in site.readers:
+                if reader.id == int(reader_id):
+                    site.readers.remove(reader)
+
 
 class NotFound404:
 
