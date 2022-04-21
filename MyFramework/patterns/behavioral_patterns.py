@@ -109,31 +109,14 @@ class CreateView(TemplateView):
         else:
             return super().__call__(request)
 
-class DeleteView(TemplateView):
-    queryset = []
-    template_name = 'delete.html'
-    context_object_name = 'objects_list'
+class DeleteView(ListView):
 
     @staticmethod
     def get_request_params(request):
         return request['request_params']
 
-    def get_queryset(self):
-        print(self.queryset)
-        return self.queryset
-
-    def get_context_object_name(self):
-        return self.context_object_name
-
     def delete_obj(self, data):
         pass
-
-    def get_context_data(self):
-        context = super().get_context_data()
-        queryset = self.get_queryset()
-        context_object_name = self.get_context_object_name()
-        context[context_object_name] = queryset
-        return context
 
     def __call__(self, request):
         if request['method'] == 'GET':

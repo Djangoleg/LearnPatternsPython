@@ -223,7 +223,7 @@ class ReaderListView(ListView, CreateView):
         new_obj = site.create_user('reader', name)
         site.readers.append(new_obj)
 
-# Контроллер - читатели заметок.
+# Контроллер - удалить пользователя.
 @AppRoute(routes=routes, url='/delete-reader/')
 class ReaderDeleteView(DeleteView):
     queryset = site.readers
