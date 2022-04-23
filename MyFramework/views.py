@@ -1,11 +1,14 @@
 from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
-from patterns.behavioral_patterns import ListView, CreateView, DeleteView
+from patterns.behavioral_patterns import ListView, CreateView, DeleteView, BaseSerializer, EmailNotifier, SmsNotifier
 from patterns.structural_patterns import AppRoute, Debug
 from patterns.сreational_patterns import Engine, Logger, Note
 
 site = Engine()
 logger = Logger('main')
+email_notifier = EmailNotifier()
+sms_notifier = SmsNotifier()
+
 routes = {}
 
 
@@ -162,6 +165,11 @@ class CreateNote:
                 note_id = site.get_new_note_id()
                 note = site.create_note('common', name, description, category)
                 note.id = note_id
+
+                # Добавляем наблюдателей за заметкой
+                note.observers.append(email_notifier)
+                note.observers.append(sms_notifier)
+
                 site.notes.append(note)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
@@ -259,7 +267,7 @@ class UserNote:
                         for note_id in check_box_values:
                             for note in site.notes:
                                 if note.id == note_id:
-                                    note.reader = reader
+                                    note.add_reader(reader)
 
                     return '200 OK', render('link-reader.html', data=request.get('data', None),
                                             reader=reader, notes_list=site.notes)
@@ -285,6 +293,11 @@ class UserNote:
             except KeyError:
                 return '200 OK', 'No reader have been added yet'
 
+@AppRoute(routes=routes, url='/api/')
+class CourseApi:
+    @Debug(name='CourseApi')
+    def __call__(self, request):
+        return '200 OK', BaseSerializer(site.notes).save()
 
 class NotFound404:
 

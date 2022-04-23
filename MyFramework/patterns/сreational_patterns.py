@@ -56,11 +56,8 @@ class Note(NotePrototype, Subject):
         self.reader = None
         super().__init__()
 
-    def __getitem__(self, item):
-        return self.readers[item]
-
     def add_reader(self, reader: Reader):
-        self.readers = reader
+        self.reader = reader
         reader.notes.append(self)
         self.notify()
 
