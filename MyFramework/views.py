@@ -208,7 +208,7 @@ class CopyNote:
                                     objects_list=category.notes, name=category.name, id=category.id)
 
         except KeyError:
-            return '200 OK', 'No courses have been added yet'
+            return '200 OK', 'No note have been added yet'
 
 
 # Контроллер - читатели заметок.
@@ -235,6 +235,55 @@ class ReaderDeleteView(DeleteView):
             for reader in site.readers:
                 if reader.id == int(reader_id):
                     site.readers.remove(reader)
+
+# Контроллер - связь пользователя и заметки.
+@AppRoute(routes=routes, url='/link-reader/')
+class UserNote:
+
+    @Debug(name='UserNote')
+    def __call__(self, request):
+
+        if request['method'] == 'POST':
+            try:
+                data = request['data']
+                reader_id = data.get('link', None)
+                check_box_values = [int(v) for k, v in data.items() if 'note_checkbox_' in k]
+
+                if reader_id:
+                    reader_id = int(reader_id)
+                    site.clear_notes_reader(reader_id)
+
+                    reader = site.get_reader_by_id(reader_id)
+
+                    if reader:
+                        for note_id in check_box_values:
+                            for note in site.notes:
+                                if note.id == note_id:
+                                    note.reader = reader
+
+                    return '200 OK', render('link-reader.html', data=request.get('data', None),
+                                            reader=reader, notes_list=site.notes)
+            except KeyError:
+                return '200 OK', 'No reader have been added yet'
+        else:
+
+            try:
+                request_params = request['request_params']
+
+                id = request_params.get('id', None)
+                if id:
+                    reader = site.get_reader_by_id(int(id))
+
+                    notes_list = site.notes
+
+                    return '200 OK', render('link-reader.html', data=request.get('data', None),
+                                            reader=reader, notes_list=notes_list)
+
+                else:
+                    return '200 OK', 'No reader have been added yet'
+
+            except KeyError:
+                return '200 OK', 'No reader have been added yet'
 
 
 class NotFound404:
