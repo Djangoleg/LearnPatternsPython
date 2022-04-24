@@ -1,0 +1,51 @@
+<br>
+<div>
+    <a class="button_link" href="/reader-list/">Back</a>
+</div>
+<div class="headerPage">
+    <h2>Link notes to user: {{reader.name}}</h2>
+</div>
+<form action="" method="post">
+    <fieldset>
+        <div class="centerPage">
+            <div class="memoTable">
+                <table class="mTable">
+                    <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Reader</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in notes_list %}
+                    <tr>
+                        <td>
+                            {% if item.reader.name %}
+                            <input type="checkbox" value="{{item.id}}" id="note_checkbox_{{item.id}}"
+                                   name="note_checkbox_{{item.id}}" checked />
+                            {% else %}
+                            <input type="checkbox" value="{{item.id}}" id="note_checkbox_{{item.id}}"
+                                   name="note_checkbox_{{item.id}}" />
+                            {% endif %}
+                        </td>
+                        <td>{{item.id}}</td>
+                        <td><b>{{item.name}}</b></td>
+                        <td>{{item.description}}</td>
+                        <td>{{item.category.name}}</td>
+                        <td>{{item.reader.name}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="formFieldSet">
+            <button type="submit" class="button_link" name="link" value="{{reader.id}}">Link</button>
+        </div>
+    </fieldset>
+</form>
+

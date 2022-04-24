@@ -1,13 +1,23 @@
 import copy
 import quopri
+from patterns.behavioral_patterns import Subject, ConsoleWriter
+
 
 # Абстрактный пользователь.
 class User:
-    pass
+    auto_id = 1
+
+    def __init__(self, name):
+        self.id = User.auto_id
+        User.auto_id += 1
+        self.name = name
 
 # Читатель.
 class Reader(User):
-    pass
+
+    def __init__(self, name):
+        self.notes = []
+        super().__init__(name)
 
 # Редактор.
 class Editor(User):
@@ -22,8 +32,8 @@ class UserFactory:
 
     # Порождающий паттерн Фабричный метод.
     @classmethod
-    def create(cls, type_):
-        return cls.types[type_]()
+    def create(cls, type_, name):
+        return cls.types[type_](name)
 
 # Порождающий паттерн Прототип - заметка
 class NotePrototype:
@@ -33,7 +43,7 @@ class NotePrototype:
         return copy.deepcopy(self)
 
 
-class Note(NotePrototype):
+class Note(NotePrototype, Subject):
     auto_id = 1
 
     def __init__(self, name, description, category):
@@ -43,6 +53,13 @@ class Note(NotePrototype):
         self.description = description
         self.category = category
         self.category.notes.append(self)
+        self.reader = None
+        super().__init__()
+
+    def add_reader(self, reader: Reader):
+        self.reader = reader
+        reader.notes.append(self)
+        self.notify()
 
     def __eq__(self, other):
         return self.name == other.name and \
@@ -100,14 +117,14 @@ class NoteFactory:
 # Основной интерфейс проекта
 class Engine:
     def __init__(self):
-        self.reader = []
-        self.editor = []
+        self.readers = []
+        self.editors = []
         self.notes = []
         self.categories = []
 
     @staticmethod
-    def create_user(type_):
-        return UserFactory.create(type_)
+    def create_user(type_, name):
+        return UserFactory.create(type_, name)
 
     def find_note_by_id(self, id):
         for item in self.notes:
@@ -138,6 +155,23 @@ class Engine:
             for note in item.notes:
                 if note.id == id:
                     item.notes.remove(note)
+
+    def clear_notes_reader(self, reader_id):
+        for item in self.notes:
+            if item.reader:
+                if item.reader.id == reader_id:
+                    item.reader = None
+
+        for item in self.categories:
+            for note in item.notes:
+                if note.reader:
+                    if note.reader.id == reader_id:
+                        note.reader = None
+
+    def get_reader_by_id(self, id):
+            for item in self.readers:
+                if item.id == id:
+                    return item
 
     @staticmethod
     def create_note(type_, name, description, category):
@@ -188,9 +222,10 @@ class SingletonByName(type):
 
 class Logger(metaclass=SingletonByName):
 
-    def __init__(self, name):
+    def __init__(self, name, writer=ConsoleWriter()):
         self.name = name
+        self.writer = writer
 
-    @staticmethod
-    def log(text):
-        print('log--->', text)
+    def log(self, text):
+        text = f'log---> {text}'
+        self.writer.write(text)

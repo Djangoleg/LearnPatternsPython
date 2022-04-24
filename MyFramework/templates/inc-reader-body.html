@@ -1,0 +1,30 @@
+<div class="headerPage">
+    <h2>Users</h2>
+</div>
+<div class="memoTable">
+    <table class="mTable">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in objects_list %}
+            <tr>
+                <td>
+                    <b>{{item.id}}</b>
+                </td>
+                <td>
+                    <b>{{item.name}}</b>
+                </td>
+                <td>
+                    <a href="/delete-reader/?id={{item.id}}">Del </a>
+                    <a href="/link-reader/?id={{item.id}}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
