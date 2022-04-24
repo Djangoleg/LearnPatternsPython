@@ -1,6 +1,11 @@
 import copy
 import quopri
+import sqlite3
+import threading
+
+from common.exception import RecordNotFoundException, DbCommitException, DbUpdateException, DbDeleteException
 from patterns.behavioral_patterns import Subject, ConsoleWriter
+from architectural_system_pattern_unit_of_work import DomainObject
 
 
 # Абстрактный пользователь.
@@ -12,6 +17,7 @@ class User:
         User.auto_id += 1
         self.name = name
 
+
 # Читатель.
 class Reader(User):
 
@@ -19,9 +25,11 @@ class Reader(User):
         self.notes = []
         super().__init__(name)
 
+
 # Редактор.
 class Editor(User):
     pass
+
 
 # Порождающий паттерн Абстрактная фабрика - фабрика пользователей.
 class UserFactory:
@@ -34,6 +42,7 @@ class UserFactory:
     @classmethod
     def create(cls, type_, name):
         return cls.types[type_](name)
+
 
 # Порождающий паттерн Прототип - заметка
 class NotePrototype:
@@ -70,17 +79,22 @@ class Note(NotePrototype, Subject):
 class DatabaseNote(Note):
     pass
 
+
 class FileSystemNote(Note):
     pass
+
 
 class CommonNote(Note):
     pass
 
+
 class ObjectOrientedNote(Note):
     pass
 
+
 class PatternNote(Note):
     pass
+
 
 # Категория
 class Category:
@@ -99,6 +113,7 @@ class Category:
             result += self.category.notes_count()
         return result
 
+
 # Порождающий паттерн Абстрактная фабрика - фабрика записок
 class NoteFactory:
     types = {
@@ -113,6 +128,7 @@ class NoteFactory:
     @classmethod
     def create(cls, type_, name, description, category):
         return cls.types[type_](name, description, category)
+
 
 # Основной интерфейс проекта
 class Engine:
@@ -169,9 +185,9 @@ class Engine:
                         note.reader = None
 
     def get_reader_by_id(self, id):
-            for item in self.readers:
-                if item.id == id:
-                    return item
+        for item in self.readers:
+            if item.id == id:
+                return item
 
     @staticmethod
     def create_note(type_, name, description, category):
@@ -199,6 +215,7 @@ class Engine:
             if item.id == id:
                 return item
         raise Exception(f'Нет категории с id = {id}')
+
 
 # Порождающий паттерн Синглтон.
 class SingletonByName(type):
@@ -229,3 +246,59 @@ class Logger(metaclass=SingletonByName):
     def log(self, text):
         text = f'log---> {text}'
         self.writer.write(text)
+
+
+class ReaderMapper:
+
+    def __init__(self, connection):
+        self.connection = connection
+        self.cursor = connection.cursor()
+        self.tablename = 'reader'
+
+    def all(self):
+        statement = f'SELECT * from {self.tablename}'
+        self.cursor.execute(statement)
+        result = []
+        for item in self.cursor.fetchall():
+            id, name = item
+            reader = Reader(name)
+            reader.id = id
+            result.append(reader)
+        return result
+
+    def find_by_id(self, id):
+        statement = f"SELECT id, name FROM {self.tablename} WHERE id=?"
+        self.cursor.execute(statement, (id,))
+        result = self.cursor.fetchone()
+        if result:
+            return Reader(*result)
+        else:
+            raise RecordNotFoundException(f'record with id={id} not found')
+
+    def insert(self, obj):
+        statement = f"INSERT INTO {self.tablename} (name) VALUES (?)"
+        self.cursor.execute(statement, (obj.name,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbCommitException(e.args)
+
+    def update(self, obj):
+        statement = f"UPDATE {self.tablename} SET name=? WHERE id=?"
+        # Где взять obj.id? Добавить в DomainModel? Или добавить когда берем объект из базы
+        self.cursor.execute(statement, (obj.name, obj.id))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbUpdateException(e.args)
+
+    def delete(self, obj):
+        statement = f"DELETE FROM {self.tablename} WHERE id=?"
+        self.cursor.execute(statement, (obj.id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbDeleteException(e.args)
+
+
+connection = sqlite3.connect('patterns.sqlite')
