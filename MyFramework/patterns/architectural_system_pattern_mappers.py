@@ -1,13 +1,13 @@
 import sqlite3
-from сreational_patterns import Student
+from сreational_patterns import Reader
 
 
-class StudentMapper:
+class ReaderMapper:
 
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()
-        self.tablename = 'student'
+        self.tablename = 'reader'
 
     def all(self):
         statement = f'SELECT * from {self.tablename}'
@@ -15,9 +15,9 @@ class StudentMapper:
         result = []
         for item in self.cursor.fetchall():
             id, name = item
-            student = Student(name)
-            student.id = id
-            result.append(student)
+            reader = Reader(name)
+            reader.id = id
+            result.append(reader)
         return result
 
     def find_by_id(self, id):
@@ -25,7 +25,7 @@ class StudentMapper:
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         if result:
-            return Student(*result)
+            return Reader(*result)
         else:
             raise RecordNotFoundException(f'record with id={id} not found')
 
@@ -94,7 +94,5 @@ class MapperRegistry:
     @staticmethod
     def get_current_mapper(name):
         return MapperRegistry.mappers[name](connection)
-
-
-
+        
 """
