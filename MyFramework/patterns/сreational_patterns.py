@@ -1,11 +1,10 @@
 import copy
 import quopri
-import sqlite3
-import threading
-
 from common.exception import RecordNotFoundException, DbCommitException, DbUpdateException, DbDeleteException
 from patterns.behavioral_patterns import Subject, ConsoleWriter
-from architectural_system_pattern_unit_of_work import DomainObject
+from patterns.architectural_pattern import DomainObject
+import sqlite3
+import threading
 
 
 # Абстрактный пользователь.
@@ -19,7 +18,7 @@ class User:
 
 
 # Читатель.
-class Reader(User):
+class Reader(User, DomainObject):
 
     def __init__(self, name):
         self.notes = []
@@ -285,7 +284,6 @@ class ReaderMapper:
 
     def update(self, obj):
         statement = f"UPDATE {self.tablename} SET name=? WHERE id=?"
-        # Где взять obj.id? Добавить в DomainModel? Или добавить когда берем объект из базы
         self.cursor.execute(statement, (obj.name, obj.id))
         try:
             self.connection.commit()
@@ -301,4 +299,24 @@ class ReaderMapper:
             raise DbDeleteException(e.args)
 
 
-connection = sqlite3.connect('patterns.sqlite')
+connection = sqlite3.connect('database/pynotes.sqlite')
+
+# архитектурный системный паттерн - Data Mapper
+class MapperRegistry:
+    mappers = {
+        'reader': ReaderMapper,
+        #'category': CategoryMapper
+    }
+
+    @staticmethod
+    def get_mapper(obj):
+
+        if isinstance(obj, Reader):
+
+            return ReaderMapper(connection)
+        #if isinstance(obj, Category):
+            #return CategoryMapper(connection)
+
+    @staticmethod
+    def get_current_mapper(name):
+        return MapperRegistry.mappers[name](connection)

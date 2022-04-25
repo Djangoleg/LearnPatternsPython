@@ -1,13 +1,16 @@
 from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
+from patterns.architectural_pattern import UnitOfWork
 from patterns.behavioral_patterns import ListView, CreateView, DeleteView, BaseSerializer, EmailNotifier, SmsNotifier
 from patterns.structural_patterns import AppRoute, Debug
-from patterns.сreational_patterns import Engine, Logger, Note
+from patterns.сreational_patterns import Engine, Logger, Note, MapperRegistry
 
 site = Engine()
 logger = Logger('main')
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 routes = {}
 
@@ -222,27 +225,40 @@ class CopyNote:
 # Контроллер - читатели заметок.
 @AppRoute(routes=routes, url='/reader-list/')
 class ReaderListView(ListView, CreateView):
-    queryset = site.readers
+    # queryset = site.readers
     template_name = 'reader-list.html'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('reader')
+        return mapper.all()
 
     def create_obj(self, data: dict):
         name = data['reader_name']
         name = site.decode_value(name)
         new_obj = site.create_user('reader', name)
         site.readers.append(new_obj)
+        new_obj.mark_new()
+        UnitOfWork.get_current().commit()
 
 # Контроллер - удалить пользователя.
 @AppRoute(routes=routes, url='/delete-reader/')
 class ReaderDeleteView(DeleteView):
-    queryset = site.readers
+    # queryset = site.readers
     template_name = 'reader-list.html'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('reader')
+        return mapper.all()
 
     def delete_obj(self, params: dict):
         reader_id = params.get('id', None)
         if reader_id:
-            for reader in site.readers:
+            readers = self.get_queryset()
+            for reader in readers:
                 if reader.id == int(reader_id):
-                    site.readers.remove(reader)
+                    # site.readers.remove(reader)
+                    reader.mark_removed()
+                    UnitOfWork.get_current().commit()
 
 # Контроллер - связь пользователя и заметки.
 @AppRoute(routes=routes, url='/link-reader/')
