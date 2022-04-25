@@ -30,9 +30,9 @@ CREATE TABLE note (
    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
    name TEXT NOT NULL,
    description TEXT NOT NULL,
-   reader_id INTEGER,
-   FOREIGN KEY (reader_id)
-      REFERENCES reader (id)
+   user_id INTEGER,
+   FOREIGN KEY (user_id)
+      REFERENCES 'user' (id)
          ON DELETE SET NULL
          ON UPDATE NO ACTION
 );
