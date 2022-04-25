@@ -252,10 +252,10 @@ class ReaderMapper:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()
-        self.tablename = 'reader'
+        self.tablename = 'user'
 
     def all(self):
-        statement = f'SELECT * from {self.tablename}'
+        statement = f'SELECT id, name from {self.tablename}'
         self.cursor.execute(statement)
         result = []
         for item in self.cursor.fetchall():
@@ -275,8 +275,8 @@ class ReaderMapper:
             raise RecordNotFoundException(f'record with id={id} not found')
 
     def insert(self, obj):
-        statement = f"INSERT INTO {self.tablename} (name) VALUES (?)"
-        self.cursor.execute(statement, (obj.name,))
+        statement = f"INSERT INTO {self.tablename} (name, type_id) VALUES (?, ?)"
+        self.cursor.execute(statement, (obj.name, 1,))
         try:
             self.connection.commit()
         except Exception as e:
