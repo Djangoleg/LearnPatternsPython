@@ -55,5 +55,19 @@ CREATE TABLE note_to_category (
 INSERT INTO user_type (id, name) VALUES (1, 'reader');
 INSERT INTO user_type (id, name) VALUES (2, 'editor');
 
+INSERT INTO 'user' (id, name, type_id) VALUES (1, 'Test_user_1', 1);
+INSERT INTO 'user' (id, name, type_id) VALUES (2, 'Test_user_2', 1);
+
+INSERT INTO note (id, name, description, user_id)
+VALUES (1, 'map() function', '# Return double of n<br>def addition(n):<br>return n + n<br># We double all numbers using map()<br>numbers = (1, 2, 3, 4)<br>result = map(addition, numbers)<br>print(list(result))<br><br># ((''John'', ''Jenny''), (''Charles'', ''Christy''), (''Mike'', ''Monica''))', 1);
+INSERT INTO note (id, name, description, user_id)
+VALUES (2, 'zip() Function', 'a = ("John", "Charles", "Mike")<br> b = ("Jenny", "Christy", "Monica", "Vicky")<br>print(tuple(x))<br><br># ((''John'', ''Jenny''), (''Charles'', ''Christy''), (''Mike'', ''Monica''))', 2);
+
+INSERT INTO category (id, name) VALUES (1, 'common');
+
+INSERT INTO note_to_category (category_id, note_id) VALUES (1, 1);
+INSERT INTO note_to_category (category_id, note_id) VALUES (1, 2);
+
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

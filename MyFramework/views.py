@@ -32,34 +32,10 @@ class Index:
     def __call__(self, request):
         logger.log('Список заметок')
 
-        if len(site.notes) == 0:
-            # Add test notes data.
-            cat_1 = site.create_category('common', None)
-            site.categories.append(cat_1)
-
-            note_test_1 = Note(name='map() function',
-                               description='''
-                                       # Return double of n<br>
-                                       def addition(n):<br>
-                                       return n + n<br>
-                                       # We double all numbers using map()<br>
-                                       numbers = (1, 2, 3, 4)<br>
-                                       result = map(addition, numbers)<br>
-                                       print(list(result))<br><br>
-                                       # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))''',
-                               category=cat_1)
-            site.notes.append(note_test_1)
-
-            note_test_2 = Note(name='zip() Function',
-                               description='''
-                                        a = ("John", "Charles", "Mike")<br>
-                                        b = ("Jenny", "Christy", "Monica", "Vicky")<br>
-                                        x = zip(a, b)<br>
-                                        print(tuple(x))<br><br>
-                        
-                                        # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))''',
-                               category=cat_1)
-            site.notes.append(note_test_2)
+        mapper = MapperRegistry.get_current_mapper('note')
+        notes = mapper.all()
+        if notes:
+            site.notes = notes
 
         if request.get('note', None):
             if request['note'] not in site.notes:
@@ -98,6 +74,11 @@ class Category:
 
     @Debug(name='Category')
     def __call__(self, request):
+        mapper = MapperRegistry.get_current_mapper('category')
+        categories = mapper.all()
+        if categories:
+            site.categories = categories
+
         return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
 
 
@@ -123,6 +104,9 @@ class CreateCategory:
 
             new_category = site.create_category(name, category)
 
+            new_category.mark_new()
+            UnitOfWork.get_current().commit()
+
             site.categories.append(new_category)
 
             return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
@@ -139,6 +123,7 @@ class NotesList:
         logger.log('Список заметок')
         try:
             category = site.find_category_by_id(int(request['request_params']['id']))
+
             return '200 OK', render('note-list.html', data=request.get('data', None), objects_list=category.notes,
                                     name=category.name, id=category.id)
         except KeyError:
@@ -166,17 +151,21 @@ class CreateNote:
             if self.category_id != -1:
                 category = site.find_category_by_id(int(self.category_id))
                 note_id = site.get_new_note_id()
-                note = site.create_note('common', name, description, category)
-                note.id = note_id
+                new_note = Note(name, description, category)
+                new_note.id = note_id
 
                 # Добавляем наблюдателей за заметкой
-                note.observers.append(email_notifier)
-                note.observers.append(sms_notifier)
+                new_note.observers.append(email_notifier)
+                new_note.observers.append(sms_notifier)
 
-                site.notes.append(note)
+                new_note.mark_new()
+                UnitOfWork.get_current().commit()
+
+                mapper = MapperRegistry.get_current_mapper('note')
+                category_notes = mapper.get_by_category_id(self.category_id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
-                                    objects_list=category.notes, name=category.name, id=category.id)
+                                    objects_list=category_notes, name=category.name, id=category.id)
 
         else:
             try:
@@ -267,6 +256,8 @@ class UserNote:
     @Debug(name='UserNote')
     def __call__(self, request):
 
+        mapper = MapperRegistry.get_current_mapper('reader')
+
         if request['method'] == 'POST':
             try:
                 data = request['data']
@@ -296,7 +287,7 @@ class UserNote:
 
                 id = request_params.get('id', None)
                 if id:
-                    reader = site.get_reader_by_id(int(id))
+                    reader = mapper.find_by_id(int(id))
 
                     notes_list = site.notes
 

@@ -51,7 +51,7 @@ class NotePrototype:
         return copy.deepcopy(self)
 
 
-class Note(NotePrototype, Subject):
+class Note(NotePrototype, Subject, DomainObject):
     auto_id = 1
 
     def __init__(self, name, description, category):
@@ -96,7 +96,7 @@ class PatternNote(Note):
 
 
 # Категория
-class Category:
+class Category(DomainObject):
     auto_id = 1
 
     def __init__(self, name, category):
@@ -111,6 +111,9 @@ class Category:
         if self.category:
             result += self.category.notes_count()
         return result
+
+    def __eq__(self, other):
+        return self.id == other.id
 
 
 # Порождающий паттерн Абстрактная фабрика - фабрика записок
@@ -270,7 +273,9 @@ class ReaderMapper:
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         if result:
-            return Reader(*result)
+            reader = Reader(result[1])
+            reader.id = result[0]
+            return reader
         else:
             raise RecordNotFoundException(f'record with id={id} not found')
 
@@ -299,23 +304,144 @@ class ReaderMapper:
             raise DbDeleteException(e.args)
 
 
+class NoteMapper:
+
+    def __init__(self, connection):
+        self.connection = connection
+        self.cursor = connection.cursor()
+        self.tablename = 'note'
+
+    def all(self):
+        statement = f'SELECT n.id, n.name, n.description, u.id, u.name, c.id, c.name ' \
+                    f'FROM {self.tablename} n ' \
+                    f'LEFT JOIN user u ON n.user_id = u.id ' \
+                    f'LEFT JOIN note_to_category nc ON n.id = nc.note_id ' \
+                    f'LEFT JOIN category c ON nc.category_id = c.id'
+
+        self.cursor.execute(statement)
+        result = []
+        for item in self.cursor.fetchall():
+            id, name, description, user_id, user_name, category_id, category_name  = item
+            category = Engine.create_category('test_category', None)
+            if category_name:
+                category = Engine.create_category(category_name, None)
+                category.id = category_id
+            if id:
+                note = Note(name, description, category)
+                note.id = id
+                note.auto_id = id
+                result.append(note)
+
+        return result
+
+    def get_by_category_id(self, category_id):
+        statement = f'SELECT n.id, n.name, n.description, u.id, u.name, c.id, c.name ' \
+                    f'FROM {self.tablename} n ' \
+                    f'LEFT JOIN user u ON n.user_id = u.id ' \
+                    f'LEFT JOIN note_to_category nc ON n.id = nc.note_id ' \
+                    f'LEFT JOIN category c ON nc.category_id = c.id ' \
+                    f'WHERE c.id=?'
+        self.cursor.execute(statement, (category_id,))
+        result = []
+        for item in self.cursor.fetchall():
+            id, name, description, user_id, user_name, cat_id, category_name  = item
+            category = Engine.create_category(category_name, None)
+            category.id = cat_id
+            note = Note(name, description, category)
+            note.id = id
+            note.auto_id = id
+            result.append(note)
+        return result
+
+
+    def insert(self, obj):
+        statement_note = f"INSERT INTO {self.tablename} (name, description, user_id) VALUES (?, ?, ?) returning id"
+        reader_id = None
+        if obj.reader:
+            reader_id = obj.reader.id
+        cursor = self.cursor.execute(statement_note, (obj.name, obj.description, reader_id,))
+
+        if obj.category:
+            statement_cat = f"INSERT INTO note_to_category (category_id, note_id) VALUES (?, ?)"
+            self.cursor.execute(statement_cat, (obj.category.id, cursor.lastrowid,))
+
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbCommitException(e.args)
+
+
+class CategoryMapper:
+
+    def __init__(self, connection):
+        self.connection = connection
+        self.cursor = connection.cursor()
+        self.tablename = 'category'
+
+    def all(self):
+        statement = f'SELECT c.id, c.name, n.id, n.name, n.description, u.id, u.name ' \
+                    f'FROM {self.tablename} c ' \
+                    f'LEFT JOIN note_to_category nc ON c.id = nc.category_id ' \
+                    f'LEFT JOIN note n ON nc.note_id = n.id ' \
+                    f'LEFT JOIN user u ON n.user_id = u.id'
+
+        result = []
+        self.cursor.execute(statement)
+        category_id = int()
+        category = None
+        for item in self.cursor.fetchall():
+            id, name, note_id, note_name, note_description, user_id, user_name = item
+            if id:
+                if category_id != id:
+                    category = Engine.create_category(name, None)
+                    category.id = id
+                    category.auto_id = id
+                    if note_name and note_description and category:
+                        note = Note(note_name, note_description, category)
+                        note.id = note_id
+                        note.auto_id = note_id
+                        if note not in category.notes:
+                            category.notes.append(note)
+                else:
+                    if note_name and note_description and category:
+                        note = Note(note_name, note_description, category)
+                        note.id = note_id
+                        note.auto_id = note_id
+                        if note not in category.notes:
+                            category.notes.append(note)
+
+                category_id = id
+                if category not in result:
+                    result.append(category)
+
+        return result
+
+    def insert(self, obj):
+        statement = f"INSERT INTO {self.tablename} (name) VALUES (?)"
+        self.cursor.execute(statement, (obj.name,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbCommitException(e.args)
+
 connection = sqlite3.connect('database/pynotes.sqlite')
 
 # архитектурный системный паттерн - Data Mapper
 class MapperRegistry:
     mappers = {
         'reader': ReaderMapper,
-        #'category': CategoryMapper
+        'note': NoteMapper,
+        'category': CategoryMapper
     }
 
     @staticmethod
     def get_mapper(obj):
-
         if isinstance(obj, Reader):
-
             return ReaderMapper(connection)
-        #if isinstance(obj, Category):
-            #return CategoryMapper(connection)
+        if isinstance(obj, Note):
+            return NoteMapper(connection)
+        if isinstance(obj, Category):
+            return CategoryMapper(connection)
 
     @staticmethod
     def get_current_mapper(name):
