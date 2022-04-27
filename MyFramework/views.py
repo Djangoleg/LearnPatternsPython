@@ -50,17 +50,19 @@ class DeleteNote:
 
     @Debug(name='DeleteNote')
     def __call__(self, request):
-        global category
         logger.log('Удалить заметку')
         try:
             id = int(request['request_params']['id'])
 
-            note = site.find_note_by_id(id)
+            note_mapper = MapperRegistry.get_current_mapper('note')
+            note = note_mapper.find_by_id(id)
             category_id = note.category.id
-            site.del_note_by_id(int(id))
+            if note:
+                note.mark_removed()
+                UnitOfWork.get_current().commit()
 
-            if category_id:
-                category = site.find_category_by_id(int(category_id))
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+            category = cat_mapper.find_by_id(category_id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
                                     objects_list=category.notes, name=category.name, id=category.id)
@@ -107,7 +109,8 @@ class CreateCategory:
             new_category.mark_new()
             UnitOfWork.get_current().commit()
 
-            site.categories.append(new_category)
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+            site.categories = cat_mapper.all()
 
             return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
         else:
@@ -149,7 +152,9 @@ class CreateNote:
 
             category = None
             if self.category_id != -1:
-                category = site.find_category_by_id(int(self.category_id))
+                cat_mapper = MapperRegistry.get_current_mapper('category')
+                category = cat_mapper.find_by_id(self.category_id)
+
                 note_id = site.get_new_note_id()
                 new_note = Note(name, description, category)
                 new_note.id = note_id
@@ -191,18 +196,21 @@ class CopyNote:
 
         try:
             id = request_params['id']
-            # name = site.decode_value(name)
-            old_note = site.find_note_by_id(int(id))
+
+            note_mapper = MapperRegistry.get_current_mapper('note')
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+
+            old_note = note_mapper.find_by_id(id)
             if old_note:
                 new_name = f'copy_{old_note.name}'
-                new_id = site.get_new_note_id()
                 new_note = old_note.clone()
                 new_note.name = new_name
-                new_note.id = new_id
-                site.notes.append(new_note)
 
-                category = site.find_category_by_id(new_note.category.id)
-                category.notes.append(new_note)
+                new_note.mark_new()
+                UnitOfWork.get_current().commit()
+
+                site.notes = note_mapper.all()
+                category = cat_mapper.find_by_id(new_note.category.id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
                                     objects_list=category.notes, name=category.name, id=category.id)
@@ -256,7 +264,8 @@ class UserNote:
     @Debug(name='UserNote')
     def __call__(self, request):
 
-        mapper = MapperRegistry.get_current_mapper('reader')
+        reader_mapper = MapperRegistry.get_current_mapper('reader')
+        note_mapper = MapperRegistry.get_current_mapper('note')
 
         if request['method'] == 'POST':
             try:
@@ -266,15 +275,18 @@ class UserNote:
 
                 if reader_id:
                     reader_id = int(reader_id)
-                    site.clear_notes_reader(reader_id)
 
-                    reader = site.get_reader_by_id(reader_id)
+                    note_mapper.clear_user_id(reader_id)
+                    reader = reader_mapper.find_by_id(reader_id)
 
                     if reader:
                         for note_id in check_box_values:
-                            for note in site.notes:
+                            for note in note_mapper.all():
                                 if note.id == note_id:
-                                    note.add_reader(reader)
+                                    note_mapper.update_user_id(note_id, reader_id)
+
+                        UnitOfWork.get_current().commit()
+                        site.notes = note_mapper.all()
 
                     return '200 OK', render('link-reader.html', data=request.get('data', None),
                                             reader=reader, notes_list=site.notes)
@@ -287,12 +299,12 @@ class UserNote:
 
                 id = request_params.get('id', None)
                 if id:
-                    reader = mapper.find_by_id(int(id))
+                    reader = reader_mapper.find_by_id(int(id))
 
-                    notes_list = site.notes
+                    site.notes = note_mapper.all()
 
                     return '200 OK', render('link-reader.html', data=request.get('data', None),
-                                            reader=reader, notes_list=notes_list)
+                                            reader=reader, notes_list=site.notes)
 
                 else:
                     return '200 OK', 'No reader have been added yet'

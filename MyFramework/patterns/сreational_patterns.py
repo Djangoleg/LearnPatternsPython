@@ -9,11 +9,9 @@ import threading
 
 # Абстрактный пользователь.
 class User:
-    auto_id = 1
+    id = 0
 
     def __init__(self, name):
-        self.id = User.auto_id
-        User.auto_id += 1
         self.name = name
 
 
@@ -52,11 +50,9 @@ class NotePrototype:
 
 
 class Note(NotePrototype, Subject, DomainObject):
-    auto_id = 1
+    id = 0
 
     def __init__(self, name, description, category):
-        self.id = Note.auto_id
-        Note.auto_id += 1
         self.name = name
         self.description = description
         self.category = category
@@ -97,11 +93,9 @@ class PatternNote(Note):
 
 # Категория
 class Category(DomainObject):
-    auto_id = 1
+    id = 0
 
     def __init__(self, name, category):
-        self.id = Category.auto_id
-        Category.auto_id += 1
         self.name = name
         self.category = category
         self.notes = []
@@ -289,7 +283,7 @@ class ReaderMapper:
 
     def update(self, obj):
         statement = f"UPDATE {self.tablename} SET name=? WHERE id=?"
-        self.cursor.execute(statement, (obj.name, obj.id))
+        self.cursor.execute(statement, (obj.name, obj.id,))
         try:
             self.connection.commit()
         except Exception as e:
@@ -322,17 +316,42 @@ class NoteMapper:
         result = []
         for item in self.cursor.fetchall():
             id, name, description, user_id, user_name, category_id, category_name  = item
-            category = Engine.create_category('test_category', None)
+            category = None
+            reader = None
             if category_name:
                 category = Engine.create_category(category_name, None)
                 category.id = category_id
+            if user_id:
+                reader = Engine.create_user('reader', user_name)
+                reader.id = user_id
             if id:
                 note = Note(name, description, category)
                 note.id = id
-                note.auto_id = id
+                if reader:
+                    note.reader = reader
                 result.append(note)
 
         return result
+
+    def find_by_id(self, id):
+        statement = f'SELECT n.id, n.name, n.description, c.id, c.name ' \
+                    f'FROM {self.tablename} n ' \
+                    f'LEFT JOIN note_to_category nc ON n.id = nc.note_id ' \
+                    f'LEFT JOIN category c ON nc.category_id = c.id ' \
+                    f'WHERE n.id=?'
+        self.cursor.execute(statement, (id,))
+        id, name, description, category_id, category_name = self.cursor.fetchone()
+        if id:
+            category = None
+            if category_id:
+                category = Engine.create_category(category_name, None)
+                category.id = category_id
+
+            note = Note(name, description, category)
+            note.id = id
+            return note
+        else:
+            raise RecordNotFoundException(f'record with id={id} not found')
 
     def get_by_category_id(self, category_id):
         statement = f'SELECT n.id, n.name, n.description, u.id, u.name, c.id, c.name ' \
@@ -349,10 +368,8 @@ class NoteMapper:
             category.id = cat_id
             note = Note(name, description, category)
             note.id = id
-            note.auto_id = id
             result.append(note)
         return result
-
 
     def insert(self, obj):
         statement_note = f"INSERT INTO {self.tablename} (name, description, user_id) VALUES (?, ?, ?) returning id"
@@ -369,6 +386,30 @@ class NoteMapper:
             self.connection.commit()
         except Exception as e:
             raise DbCommitException(e.args)
+
+    def delete(self, obj):
+        statement = f"DELETE FROM {self.tablename} WHERE id=?"
+        self.cursor.execute(statement, (obj.id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbDeleteException(e.args)
+
+    def update_user_id(self, note_id, user_id):
+        statement = f"UPDATE {self.tablename} SET user_id=? WHERE id=?"
+        self.cursor.execute(statement, (user_id, note_id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbUpdateException(e.args)
+
+    def clear_user_id(self, user_id):
+        statement = f"UPDATE {self.tablename} SET user_id=null WHERE user_id=?"
+        self.cursor.execute(statement, (user_id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbUpdateException(e.args)
 
 
 class CategoryMapper:
@@ -395,18 +436,15 @@ class CategoryMapper:
                 if category_id != id:
                     category = Engine.create_category(name, None)
                     category.id = id
-                    category.auto_id = id
                     if note_name and note_description and category:
                         note = Note(note_name, note_description, category)
                         note.id = note_id
-                        note.auto_id = note_id
                         if note not in category.notes:
                             category.notes.append(note)
                 else:
                     if note_name and note_description and category:
                         note = Note(note_name, note_description, category)
                         note.id = note_id
-                        note.auto_id = note_id
                         if note not in category.notes:
                             category.notes.append(note)
 
@@ -416,6 +454,45 @@ class CategoryMapper:
 
         return result
 
+    def find_by_id(self, id):
+        statement = f'SELECT c.id, c.name, n.id, n.name, n.description, u.id, u.name ' \
+                    f'FROM {self.tablename} c ' \
+                    f'LEFT JOIN note_to_category nc ON c.id = nc.category_id ' \
+                    f'LEFT JOIN note n ON nc.note_id = n.id ' \
+                    f'LEFT JOIN user u ON n.user_id = u.id ' \
+                    f'WHERE c.id=?'
+        result = []
+        self.cursor.execute(statement, (id,))
+        category_id = int()
+        category = None
+        for item in self.cursor.fetchall():
+            id, name, note_id, note_name, note_description, user_id, user_name = item
+            if id:
+                if category_id != id:
+                    category = Engine.create_category(name, None)
+                    category.id = id
+                    if note_name and note_description and category:
+                        note = Note(note_name, note_description, category)
+                        note.id = note_id
+                        if note not in category.notes:
+                            category.notes.append(note)
+                else:
+                    if note_name and note_description and category:
+                        note = Note(note_name, note_description, category)
+                        note.id = note_id
+                        if note not in category.notes:
+                            category.notes.append(note)
+
+                category_id = id
+
+                if category not in result:
+                    result.append(category)
+
+        if len(result) > 0:
+            return result[0]
+        else:
+            return result
+
     def insert(self, obj):
         statement = f"INSERT INTO {self.tablename} (name) VALUES (?)"
         self.cursor.execute(statement, (obj.name,))
@@ -423,6 +500,14 @@ class CategoryMapper:
             self.connection.commit()
         except Exception as e:
             raise DbCommitException(e.args)
+
+    def delete(self, obj):
+        statement = f"DELETE FROM {self.tablename} WHERE id=?"
+        self.cursor.execute(statement, (obj.id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DbDeleteException(e.args)
 
 connection = sqlite3.connect('database/pynotes.sqlite')
 
