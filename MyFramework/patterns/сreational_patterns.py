@@ -138,62 +138,9 @@ class Engine:
     def create_user(type_, name):
         return UserFactory.create(type_, name)
 
-    def find_note_by_id(self, id):
-        for item in self.notes:
-            print('item', item.id)
-            if item.id == id:
-                return item
-        raise Exception(f'Нет заметки с id = {id}')
-
-    def get_new_note_id(self):
-        max_id = 1
-        for note in self.notes:
-            if note.id > max_id:
-                max_id = note.id
-
-        for item in self.categories:
-            for note in item.notes:
-                if note.id > max_id:
-                    max_id = note.id
-
-        return max_id + 1
-
-    def del_note_by_id(self, id):
-        for item in self.notes:
-            if item.id == id:
-                self.notes.remove(item)
-
-        for item in self.categories:
-            for note in item.notes:
-                if note.id == id:
-                    item.notes.remove(note)
-
-    def clear_notes_reader(self, reader_id):
-        for item in self.notes:
-            if item.reader:
-                if item.reader.id == reader_id:
-                    item.reader = None
-
-        for item in self.categories:
-            for note in item.notes:
-                if note.reader:
-                    if note.reader.id == reader_id:
-                        note.reader = None
-
-    def get_reader_by_id(self, id):
-        for item in self.readers:
-            if item.id == id:
-                return item
-
     @staticmethod
     def create_note(type_, name, description, category):
         return NoteFactory.create(type_, name, description, category)
-
-    def get_note_by_name(self, name):
-        for item in self.notes:
-            if item.name == name:
-                return item
-        return None
 
     @staticmethod
     def decode_value(val):

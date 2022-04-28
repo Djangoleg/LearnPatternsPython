@@ -155,9 +155,7 @@ class CreateNote:
                 cat_mapper = MapperRegistry.get_current_mapper('category')
                 category = cat_mapper.find_by_id(self.category_id)
 
-                note_id = site.get_new_note_id()
                 new_note = Note(name, description, category)
-                new_note.id = note_id
 
                 # Добавляем наблюдателей за заметкой
                 new_note.observers.append(email_notifier)
