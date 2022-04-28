@@ -76,7 +76,7 @@ class LiteFramework:
 class DebugApplication(LiteFramework):
 
     def __init__(self, routes_obj, fronts_obj):
-        self.application = Framework(routes_obj, fronts_obj)
+        self.application = LiteFramework(routes_obj, fronts_obj)
         super().__init__(routes_obj, fronts_obj)
 
     def __call__(self, env, start_response):
