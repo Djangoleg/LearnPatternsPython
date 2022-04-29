@@ -24,7 +24,7 @@
                     {% for item in notes_list %}
                     <tr>
                         <td>
-                            {% if item.reader.name %}
+                            {% if item.reader.id == reader.id %}
                             <input type="checkbox" value="{{item.id}}" id="note_checkbox_{{item.id}}"
                                    name="note_checkbox_{{item.id}}" checked />
                             {% else %}

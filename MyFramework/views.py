@@ -1,13 +1,16 @@
 from lite_framework.settings import SERVER_URL
 from lite_framework.templator import render
+from patterns.architectural_pattern import UnitOfWork
 from patterns.behavioral_patterns import ListView, CreateView, DeleteView, BaseSerializer, EmailNotifier, SmsNotifier
 from patterns.structural_patterns import AppRoute, Debug
-from patterns.сreational_patterns import Engine, Logger, Note
+from patterns.сreational_patterns import Engine, Logger, Note, MapperRegistry
 
 site = Engine()
 logger = Logger('main')
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 routes = {}
 
@@ -29,34 +32,10 @@ class Index:
     def __call__(self, request):
         logger.log('Список заметок')
 
-        if len(site.notes) == 0:
-            # Add test notes data.
-            cat_1 = site.create_category('common', None)
-            site.categories.append(cat_1)
-
-            note_test_1 = Note(name='map() function',
-                               description='''
-                                       # Return double of n<br>
-                                       def addition(n):<br>
-                                       return n + n<br>
-                                       # We double all numbers using map()<br>
-                                       numbers = (1, 2, 3, 4)<br>
-                                       result = map(addition, numbers)<br>
-                                       print(list(result))<br><br>
-                                       # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))''',
-                               category=cat_1)
-            site.notes.append(note_test_1)
-
-            note_test_2 = Note(name='zip() Function',
-                               description='''
-                                        a = ("John", "Charles", "Mike")<br>
-                                        b = ("Jenny", "Christy", "Monica", "Vicky")<br>
-                                        x = zip(a, b)<br>
-                                        print(tuple(x))<br><br>
-                        
-                                        # (('John', 'Jenny'), ('Charles', 'Christy'), ('Mike', 'Monica'))''',
-                               category=cat_1)
-            site.notes.append(note_test_2)
+        mapper = MapperRegistry.get_current_mapper('note')
+        notes = mapper.all()
+        if notes:
+            site.notes = notes
 
         if request.get('note', None):
             if request['note'] not in site.notes:
@@ -71,17 +50,19 @@ class DeleteNote:
 
     @Debug(name='DeleteNote')
     def __call__(self, request):
-        global category
         logger.log('Удалить заметку')
         try:
             id = int(request['request_params']['id'])
 
-            note = site.find_note_by_id(id)
+            note_mapper = MapperRegistry.get_current_mapper('note')
+            note = note_mapper.find_by_id(id)
             category_id = note.category.id
-            site.del_note_by_id(int(id))
+            if note:
+                note.mark_removed()
+                UnitOfWork.get_current().commit()
 
-            if category_id:
-                category = site.find_category_by_id(int(category_id))
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+            category = cat_mapper.find_by_id(category_id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
                                     objects_list=category.notes, name=category.name, id=category.id)
@@ -95,6 +76,11 @@ class Category:
 
     @Debug(name='Category')
     def __call__(self, request):
+        mapper = MapperRegistry.get_current_mapper('category')
+        categories = mapper.all()
+        if categories:
+            site.categories = categories
+
         return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
 
 
@@ -120,7 +106,11 @@ class CreateCategory:
 
             new_category = site.create_category(name, category)
 
-            site.categories.append(new_category)
+            new_category.mark_new()
+            UnitOfWork.get_current().commit()
+
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+            site.categories = cat_mapper.all()
 
             return '200 OK', render('category.html', data=request.get('data', None), category_list=site.categories)
         else:
@@ -136,6 +126,7 @@ class NotesList:
         logger.log('Список заметок')
         try:
             category = site.find_category_by_id(int(request['request_params']['id']))
+
             return '200 OK', render('note-list.html', data=request.get('data', None), objects_list=category.notes,
                                     name=category.name, id=category.id)
         except KeyError:
@@ -161,19 +152,23 @@ class CreateNote:
 
             category = None
             if self.category_id != -1:
-                category = site.find_category_by_id(int(self.category_id))
-                note_id = site.get_new_note_id()
-                note = site.create_note('common', name, description, category)
-                note.id = note_id
+                cat_mapper = MapperRegistry.get_current_mapper('category')
+                category = cat_mapper.find_by_id(self.category_id)
+
+                new_note = Note(name, description, category)
 
                 # Добавляем наблюдателей за заметкой
-                note.observers.append(email_notifier)
-                note.observers.append(sms_notifier)
+                new_note.observers.append(email_notifier)
+                new_note.observers.append(sms_notifier)
 
-                site.notes.append(note)
+                new_note.mark_new()
+                UnitOfWork.get_current().commit()
+
+                mapper = MapperRegistry.get_current_mapper('note')
+                category_notes = mapper.get_by_category_id(self.category_id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
-                                    objects_list=category.notes, name=category.name, id=category.id)
+                                    objects_list=category_notes, name=category.name, id=category.id)
 
         else:
             try:
@@ -199,18 +194,21 @@ class CopyNote:
 
         try:
             id = request_params['id']
-            # name = site.decode_value(name)
-            old_note = site.find_note_by_id(int(id))
+
+            note_mapper = MapperRegistry.get_current_mapper('note')
+            cat_mapper = MapperRegistry.get_current_mapper('category')
+
+            old_note = note_mapper.find_by_id(id)
             if old_note:
                 new_name = f'copy_{old_note.name}'
-                new_id = site.get_new_note_id()
                 new_note = old_note.clone()
                 new_note.name = new_name
-                new_note.id = new_id
-                site.notes.append(new_note)
 
-                category = site.find_category_by_id(new_note.category.id)
-                category.notes.append(new_note)
+                new_note.mark_new()
+                UnitOfWork.get_current().commit()
+
+                site.notes = note_mapper.all()
+                category = cat_mapper.find_by_id(new_note.category.id)
 
             return '200 OK', render('note-list.html', data=request.get('data', None),
                                     objects_list=category.notes, name=category.name, id=category.id)
@@ -222,27 +220,40 @@ class CopyNote:
 # Контроллер - читатели заметок.
 @AppRoute(routes=routes, url='/reader-list/')
 class ReaderListView(ListView, CreateView):
-    queryset = site.readers
+    # queryset = site.readers
     template_name = 'reader-list.html'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('reader')
+        return mapper.all()
 
     def create_obj(self, data: dict):
         name = data['reader_name']
         name = site.decode_value(name)
         new_obj = site.create_user('reader', name)
         site.readers.append(new_obj)
+        new_obj.mark_new()
+        UnitOfWork.get_current().commit()
 
 # Контроллер - удалить пользователя.
 @AppRoute(routes=routes, url='/delete-reader/')
 class ReaderDeleteView(DeleteView):
-    queryset = site.readers
+    # queryset = site.readers
     template_name = 'reader-list.html'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('reader')
+        return mapper.all()
 
     def delete_obj(self, params: dict):
         reader_id = params.get('id', None)
         if reader_id:
-            for reader in site.readers:
+            readers = self.get_queryset()
+            for reader in readers:
                 if reader.id == int(reader_id):
-                    site.readers.remove(reader)
+                    # site.readers.remove(reader)
+                    reader.mark_removed()
+                    UnitOfWork.get_current().commit()
 
 # Контроллер - связь пользователя и заметки.
 @AppRoute(routes=routes, url='/link-reader/')
@@ -250,6 +261,9 @@ class UserNote:
 
     @Debug(name='UserNote')
     def __call__(self, request):
+
+        reader_mapper = MapperRegistry.get_current_mapper('reader')
+        note_mapper = MapperRegistry.get_current_mapper('note')
 
         if request['method'] == 'POST':
             try:
@@ -259,15 +273,18 @@ class UserNote:
 
                 if reader_id:
                     reader_id = int(reader_id)
-                    site.clear_notes_reader(reader_id)
 
-                    reader = site.get_reader_by_id(reader_id)
+                    note_mapper.clear_user_id(reader_id)
+                    reader = reader_mapper.find_by_id(reader_id)
 
                     if reader:
                         for note_id in check_box_values:
-                            for note in site.notes:
+                            for note in note_mapper.all():
                                 if note.id == note_id:
-                                    note.add_reader(reader)
+                                    note_mapper.update_user_id(note_id, reader_id)
+
+                        UnitOfWork.get_current().commit()
+                        site.notes = note_mapper.all()
 
                     return '200 OK', render('link-reader.html', data=request.get('data', None),
                                             reader=reader, notes_list=site.notes)
@@ -280,12 +297,12 @@ class UserNote:
 
                 id = request_params.get('id', None)
                 if id:
-                    reader = site.get_reader_by_id(int(id))
+                    reader = reader_mapper.find_by_id(int(id))
 
-                    notes_list = site.notes
+                    site.notes = note_mapper.all()
 
                     return '200 OK', render('link-reader.html', data=request.get('data', None),
-                                            reader=reader, notes_list=notes_list)
+                                            reader=reader, notes_list=site.notes)
 
                 else:
                     return '200 OK', 'No reader have been added yet'
